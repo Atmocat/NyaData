@@ -389,6 +389,10 @@ def Artist():
     data_list = Show.artist_data(artist_name)
     return render_template("NyaArtist.html",artistsTotal = data_list)
 
+@app.route("/about")
+def about():
+    return render_template("about.html")
+
 def open_browser():
     webbrowser.open_new("http://127.0.0.1:1812/")
     # pass
