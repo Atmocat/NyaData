@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="/static/img/main.ico">
+    <link rel="stylesheet" type="text/css" href="/static/css/main.css">
+    <title>NyaData - 播放数据展示</title>
+</head>
+<body>
+    <!-- 导航栏部分,所有数据在同一页面内 -->
+    <header>
+        <div id="nav">
+            <ul>
+                <li style="background-color: rgb(128, 215, 255)"><a href="/">数据总览</a></li>
+                <li><a href="/AllSong">所有歌曲</a></li>
+                <li><a href="/song">单曲信息</a></li>
+                <li><a href="/artist">歌手信息</a></li>
+                <li><a id="dayAnchor" href="/day?day=">每日数据</a></li>
+                <li style="float:right" id="nav_about"><a href="/about">关于</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <!-- 各部分数据,用表格承接 -->
+    <div id="totalHour">
+        <h2>数据总览</h2>
+        <table id="totalHour_table">
+            <tr>
+                <th>总播放时长</th>
+            </tr>
+        </table>
+        <table id="monthData_table">
+            <tr>
+                <th>月份</th>
+                <th>月播放时长</th>
+            </tr>
+        </table>
+    </div>
+
+    <!-- 脚本设置 -->
+    <script>
+        // 数据格式 数据整体all_data ; 总时长total_hours ; 本年年份year ; [月份,月数据,...]数组monthData
+        // 使用flask接收json的变量
+        const allData = {{all_data|tojson}};
+        const year = allData[0];
+        const totalHour = allData[1];
+        const monthData = allData[2];
+
+        // 向总播放时长写入信息
+        function totalData_write() {
+            let table = document.getElementById("totalHour_table");
+            let newRow = table.insertRow(-1);
+            let newData1 = newRow.insertCell(0);
+            if (totalHour != undefined) {
+                newData1.innerText = `${totalHour}小时`;
+            } else {
+                newData1.innerText = `未获取到数据`;
+            };
+            
+        };
+
+        // 向每月时长写入信息
+        function monthData_write(i) {
+            let table = document.getElementById("monthData_table");
+            let newRow = table.insertRow(-1);
+            let newData1 = newRow.insertCell(0);
+            let newData2 = newRow.insertCell(1);
+            if (monthData[i][0] != undefined) {
+                newData1.innerText = `${year}年${monthData[i][0]}月`;
+            } else {
+                newData1.innerText = `未获取到数据`;
+            };
+            if (monthData[i][1] != undefined) {
+                newData2.innerText = `${monthData[i][1]}小时`;
+            } else {
+                newData2.innerText = `未获取到数据`;
+            };
+        };
+
+        // 获取当日日期YYYYMMDD,写入a标签html
+        function urlWrite() {
+            const date = new Date();
+            console.log(date);
+            let nowDate = date.getFullYear();
+            if (date.getMonth() + 1 <= 10) {
+                nowDate += `0${date.getMonth() + 1}`;
+            } else {
+                nowDate += `${date.getMonth() + 1}`;
+            };
+            if (date.getDate() + 1 <= 10) {
+                nowDate += `0${date.getDate()}`;
+            } else {
+                nowDate += `${date.getDate()}`;
+            };
+            console.log(nowDate); // 格式化为YYYYMMDD
+            let dayAnchor = document.getElementById("dayAnchor");
+            dayAnchor.href = `/day?day=${nowDate}`;
+            console.log("每日数据url修改完成");
+        };
+
+        // DOM加载后调用
+        window.addEventListener("DOMContentLoaded", function() {
+            urlWrite();
+            totalData_write();
+            for (let i = 0; i<=11; i++) {
+                monthData_write(i);
+            };
+        });
+    </script>
+</body>
+</html>

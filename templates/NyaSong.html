@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="/static/img/main.ico">
+    <link rel="stylesheet" type="text/css" href="/static/css/main.css">
+    <title>NyaSong - 歌曲信息页</title>
+</head>
+<body>
+    <!-- 导航栏部分,所有数据在同一页面内 -->
+    <header>
+        <div id="nav">
+            <ul>
+                <li><a href="/">数据总览</a></li>
+                <li><a href="/AllSong">所有歌曲</a></li>
+                <li style="background-color: rgb(128, 215, 255)"><a href="/song">单曲信息</a></li>
+                <li><a href="/artist">歌手信息</a></li>
+                <li><a id="dayAnchor" href="/day">每日数据</a></li>
+                <li style="float:right" id="nav_about"><a href="/about">关于</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <!--展示歌曲信息
+        [0] 歌曲名
+        [1] 时长
+        [2] 作家 多作家用";"隔开
+        [3] 播放次数
+        [4] 单曲循环次数
+        [5] 第一次播放日期
+        [6] 上次播放日期
+        [7] 播放最多日期
+        [8] 循环播放最多日期 -->
+    <h2>歌曲信息</h2>
+    <table id="songData_table">
+        <tr>
+            <td>歌曲名</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>时长</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>作家</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>播放次数</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>单曲循环次数</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>首次播放日期</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>上次播放日期</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>播放最多日期</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>循环播放最多日期</td>
+            <td></td>
+        </tr>
+    </table>
+    <!-- 脚本设置 -->
+    <script>
+        const songData = {{song_data | tojson}};
+        const songData_length = songData.length;
+
+        function tableWrite(songData_each, i) {
+            let table = document.getElementById("songData_table");
+            let cell = table.rows[i].cells[1];
+            if (i == 2) {
+                cell.innerHTML = `<a href="/artist?artist=${songData_each}">${songData_each}</a>`;
+            } else if (i == 5 || i == 6 || i == 7 || i == 8) {
+                let writeString = "";
+                if (songData_each != null) {
+                    for (let i1 = 0; i1 < songData_each.length; i1++) {
+                        writeString = `${songData_each[i1].substring(0,4)}年`
+                        if (toString(songData_each[i1])[4] == 0) {
+                            writeString += `${songData_each[i1].substring(5,6)}月`;
+                        } else {
+                            writeString += `${songData_each[i1].substring(4,6)}月`;
+                        }
+                        if (toString(songData_each[i1])[6] == 0) {
+                            writeString += `${songData_each[i1].substring(7,8)}日`;
+                        } else {
+                            writeString += `${songData_each[i1].substring(6,8)}日`;
+                        }
+                        cell.innerHTML += `<a href="/day?day=${songData_each[i1]}">${writeString}</a>`
+                    }
+                } else {
+                    cell.innerHTML = "暂无数据";
+                }
+            } else {
+                cell.innerText = `${songData_each}`;
+            }
+            console.log(`编号${i}写入完成`);
+        }
+
+        // 解析歌曲信息内容
+        function songData_search() {
+            let songData_array = [];
+            let songData_each;
+            for (let i = 0; i < songData_length; i++) {
+                songData_each = songData[i];
+                console.log(`编号${i},修改前数据格式${typeof(songData_each)},歌曲信息${songData_each}`);
+                // [1]播放时长判断:时分秒写入
+                if (i == 1) {
+                    let songData_hor = (songData_each - songData_each % 3600) / 3600;
+                    let songData_min = (songData_each % 3600 - songData_each % 3600 % 60) / 60;
+                    let songData_sec = songData_each % 3600 - songData_min * 60;
+                    if (songData_hor > 0) {
+                        songData_each = `${parseInt(songData_hor)}时${parseInt(songData_min)}分${parseInt(songData_sec)}秒`;
+                    } else if (songData_min > 0) {
+                        songData_each = `${parseInt(songData_min)}分${parseInt(songData_sec)}秒`;
+                    } else if (songData_sec > 0) {
+                        songData_each = `${parseInt(songData_sec)}秒`;
+                    } else {
+                        songData_each = `有点弱...再多听一会儿吧`;
+                    }
+                // [2]多歌手判断:字符串,多歌手时用";"隔开(存疑)
+                } else if (i == 2) {
+                    songData_each = songData_each; // 占位用
+                // [7][8]多时间判断:多日期用","隔开,仅记录最近的三天
+                } else if (i == 5 || i == 6 || i == 7 || i == 8) {
+                    if (songData_each != null) {
+                        songData_each = `${songData_each}`;
+                        songData_array = [];
+                        if (songData_each.length != 8) {
+                            songData_array = songData_each.split(",");
+                            let songData_timeSpilt;
+                            let songData_eachTemp = "";
+                            songData_array.sort(); // 结果为[YYYYMMDD, YYYYMMDD, YYYYMMDD]
+                            songData_each = [];
+                            for (let i1 = 0; i1 < songData_array.length; i1++) {
+                                songData_each.push(songData_array[i1]);
+                                if (i1 == 2) {
+                                    break;
+                                }
+                            }
+                        } else {
+                            songData_array.push(songData_each);
+                            songData_each = songData_array;
+                        }
+                    }
+                }
+                console.log(`编号${i},歌曲信息(修改后):`, songData_each);
+                tableWrite(songData_each, i);
+            };
+        };
+
+        // 获取当日日期YYYYMMDD,写入a标签html
+        function urlWrite() {
+            const date = new Date();
+            console.log(date);
+            let nowDate = date.getFullYear();
+            if (date.getMonth() + 1 <= 10) {
+                nowDate += `0${date.getMonth() + 1}`;
+            } else {
+                nowDate += `${date.getMonth() + 1}`;
+            };
+            if (date.getDate() + 1 <= 10) {
+                nowDate += `0${date.getDate()}`;
+            } else {
+                nowDate += `${date.getDate()}`;
+            };
+            console.log(nowDate); // 格式化为YYYYMMDD
+            let dayAnchor = document.getElementById("dayAnchor");
+            dayAnchor.href = `/day?day=${nowDate}`;
+            console.log("每日数据url修改完成");
+        };
+
+        window.addEventListener("DOMContentLoaded", function() {
+            urlWrite();
+            songData_search();
+        });
+    </script>
+</body>
+</html>

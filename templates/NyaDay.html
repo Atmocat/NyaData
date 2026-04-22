@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="/static/img/main.ico">
+    <link rel="stylesheet" type="text/css" href="/static/css/main.css">
+    <title>NyaDay - 每日数据展示</title>
+</head>
+<body>
+    <!-- 导航栏部分,所有数据在同一页面内 -->
+    <header>
+        <div id="nav">
+            <ul>
+                <li><a href="/">数据总览</a></li>
+                <li><a href="/AllSong">所有歌曲</a></li>
+                <li><a href="/song">单曲信息</a></li>
+                <li><a href="/artist">歌手信息</a></li>
+                <li style="background-color: rgb(128, 215, 255)"><a id="dayAnchor" href="/day">每日数据</a></li>
+                <li style="float:right" id="nav_about"><a href="/about">关于</a></li>
+            </ul>
+        </div>
+    </header>
+    <h2>每日数据</h2>
+    <div id="day">
+        <table id="dayTotal_table">
+            <tr>
+                <th>今日播放总时长</th>
+            </tr>
+        </table>
+        <table id="dayEach_table">
+            <tr>
+                <th>歌曲名<input type="submit" id="nameSort_btn" onclick="nameSort(); return false;"></th>
+                <th>播放次数<input type="submit" id="integerSort_btn" onclick="integerSort(); return false;"></th>
+                <th>单曲循环次数<input type="submit" id="roundSort_btn" onclick="roundSort(); return false"></th>
+            </tr>
+        </table>
+    </div>
+    
+    <!-- 脚本设置 -->
+    <script>
+        let dayTotal = {{day_total | tojson}}; // int或null,精确到分
+        let dayEach = {{day_each | tojson}}; // dic或null,传递为完播歌曲{name:[完播次数,单曲循环次数]}
+        // 测试数据 let dayTotal = 50000
+        // 测试数据 let dayEach = {"gura":[15,12], "saba":[11,1], "neuro":[2,0], "wanxing":[50,42], "ruama":[10,6], "starfish":[10,7]}
+        let nameSortCheck = -1; // 歌曲名排序参数
+        let integerSortCheck = -1; // 播放次数排序参数
+        let roundSortCheck = -1; // 循环播放排序参数
+        let nameArr;
+        let dayEachArr = [];
+
+        // 写入dayEachArr 格式为嵌套列表[[name, 完播次数, 单曲循环次数], [], ...]
+        function dayArr_write() {
+            if (dayEach != null) {
+                for (let key in dayEach) {
+                    nameArr = [];
+                    nameArr.push(key);
+                    nameArr.push(dayEach[key][0]);
+                    nameArr.push(dayEach[key][1]);
+                    dayEachArr.push(nameArr);
+                }
+            }
+            console.log("初始写入dayEachArr完成" ,dayEach, dayEachArr);
+        }
+
+        // 格式化播放时长
+        function timeFormat() {
+            let songData_hor = (dayTotal - dayTotal % 3600) / 3600;
+            let songData_min = (dayTotal % 3600 - dayTotal % 3600 % 60) / 60;
+            let songData_sec = dayTotal % 3600 - songData_min * 60;
+            if (songData_hor > 0) {
+                dayTotal = `${parseInt(songData_hor)}时${parseInt(songData_min)}分${parseInt(songData_sec)}秒`;
+            } else if (songData_min > 0) {
+                dayTotal = `${parseInt(songData_min)}分${parseInt(songData_sec)}秒`;
+            } else if (songData_sec > 0) {
+                dayTotal = `${parseInt(songData_sec)}秒`;
+            } else {
+                dayTotal = `有点弱...再多听一会儿吧`;
+            }
+            console.log(`格式化日期完成:${dayTotal}`);
+            return dayTotal;
+        }
+
+        // 按歌曲名排序,1正序,-1倒序
+        function nameSort() {
+            nameSortCheck = nameSortCheck === 1 ? -1 : 1;
+            if (nameSortCheck == 1) {
+                dayEachArr.sort((a, b) => a[0] > b[0] ? 1 : -1);
+            } else {
+                dayEachArr.sort((a, b) => a[0] < b[0] ? 1 : -1);
+            }
+            console.log("按歌曲名排序完成", dayEachArr);
+            dayEach_tableWrite();
+        }
+
+        // 按播放次数排序,1正序,-1倒序,相同时按歌曲名正序
+        function integerSort() {
+            integerSortCheck = integerSortCheck === 1 ? -1 : 1;
+            if (integerSortCheck == 1) {
+                dayEachArr.sort((a, b) => {
+                    if (a[1] != b[1]) return a[1] - b[1];
+                    return a[0].localeCompare(b[0]);
+                });
+            } else {
+                dayEachArr.sort((a, b) => {
+                    if (a[1] != b[1]) return b[1] - a[1];
+                    return a[0].localeCompare(b[0]);
+                });
+            }
+            console.log("按播放次数排序完成", dayEachArr);
+            dayEach_tableWrite();
+        }
+
+        // 按循环播放次数排序,1正序,-1倒序,相同时按歌曲名正序
+        function roundSort() {
+            roundSortCheck = roundSortCheck === 1 ? -1 : 1;
+            if (roundSortCheck == 1) {
+                dayEachArr.sort((a, b) => {
+                    if (a[2] != b[2]) return a[2] - b[2];
+                    return a[0].localeCompare(b[0]);
+                });
+            } else {
+                dayEachArr.sort((a, b) => {
+                    if (a[2] != b[2]) return b[2] - a[2];
+                    return a[0].localeCompare(b[0]);
+                });
+            }
+            console.log("按循环次数排序完成", dayEachArr);
+            dayEach_tableWrite();
+        }
+
+        // dayTotal_table写入数据
+        function dayTotal_tableWrite() {
+            let table = document.getElementById("dayTotal_table");
+            if (dayTotal == 0 || dayTotal == null) {
+                table.insertRow(-1).insertCell().innerText = `有点弱...再多听一会儿吧`;
+            } else {
+                table.insertRow(-1).insertCell().innerText = dayTotal;
+            }
+            console.log("dayTotal_table写入完成");
+        }
+
+        // dayEach_table写入数据
+        function dayEach_tableWrite() {
+            let table = document.getElementById("dayEach_table");
+            let row;
+            while (table.rows.length > 1) {
+                table.deleteRow(1);
+            }
+            console.log("准备写入dayEach_table:", dayEachArr);
+            if (dayEach == null) {
+                row = table.insertRow(-1);
+                row.insertCell.innerText = "有点弱...再多听一会儿吧";
+            } else {
+                for (let i = 0; i < dayEachArr.length; i++) {
+                    row = table.insertRow(-1);
+                    row.insertCell(0).innerHTML = `<a href="/song?songname=${dayEachArr[i][0]}">${dayEachArr[i][0]}</a>`;
+                    row.insertCell(1).innerText = `${dayEachArr[i][1]}次`;
+                    row.insertCell(2).innerText = `${dayEachArr[i][2]}次`;
+                }
+            }
+            let button = document.getElementById("nameSort_btn");
+            if (nameSortCheck == 1) {
+                button.value = "升序";
+            } else {
+                button.value = "降序";
+            }
+            button = document.getElementById("integerSort_btn");
+            if (integerSortCheck == 1) {
+                button.value = "升序";
+            } else {
+                button.value = "降序";
+            }
+            button = document.getElementById("roundSort_btn");
+            if (roundSortCheck == 1) {
+                button.value = "升序";
+            } else {
+                button.value = "降序";
+            }
+            console.log("dayEach_table写入完成");
+        }
+
+        // 获取当日日期YYYYMMDD,写入a标签html
+        function urlWrite() {
+            const date = new Date();
+            console.log(`今天是${date}`);
+            let nowDate = date.getFullYear();
+            if (date.getMonth() + 1 <= 10) {
+                nowDate += `0${date.getMonth() + 1}`;
+            } else {
+                nowDate += `${date.getMonth() + 1}`;
+            };
+            if (date.getDate() + 1 <= 10) {
+                nowDate += `0${date.getDate()}`;
+            } else {
+                nowDate += `${date.getDate()}`;
+            };
+            console.log(nowDate); // 格式化为YYYYMMDD
+            let dayAnchor = document.getElementById("dayAnchor");
+            dayAnchor.href = `/day?day=${nowDate}`;
+            console.log("每日数据url修改完成");
+        };
+
+        // DOM加载后,分割列表并执行对应函数
+        window.addEventListener("DOMContentLoaded", function() {
+            urlWrite();
+            dayArr_write();
+            nameSort();
+            dayTotal = timeFormat();
+            dayTotal_tableWrite();
+        });
+    </script>
+</body>
+</html>
