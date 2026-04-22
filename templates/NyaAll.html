@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="/static/img/main.ico">
+    <link rel="stylesheet" type="text/css" href="/static/css/main.css">
+    <title>NyaAll - 所有歌曲信息页</title>
+</head>
+<body>
+    <!-- 导航栏部分,所有数据在同一页面内 -->
+    <header>
+        <div id="nav">
+            <ul>
+                <li><a href="/">数据总览</a></li>
+                <li style="background-color: rgb(128, 215, 255)"><a href="/AllSong">所有歌曲</a></li>
+                <li><a href="/song">单曲信息</a></li>
+                <li><a href="/artist">歌手信息</a></li>
+                <li><a id="dayAnchor" href="/day?day=">每日数据</a></li>
+                <li style="float:right" id="nav_about"><a href="/about">关于</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <!-- 所有歌曲信息 -->
+    <div>
+        <h2>所有歌曲信息</h2>
+    </div>
+
+    <div id="songData">
+        <ul id="songList" style="float: left;"><li class="stickyHeader">歌曲名列表</li></ul>
+        <!-- [0]歌曲名,[1]时长,[2]歌手,[3]总播放次数,[4]循环播放次数,[5]首次播放日期,[6]最近播放日期 -->
+        <table id="songTable" style="float: right;">
+            <tr><th colspan="2">选中歌曲信息</th></tr>
+        </table>
+    </div>
+
+    <script>
+        // 获取歌曲信息,foreverLove承接,嵌套列表,时长格式秒(转化为时分秒),日期格式YYYYMMDD
+        const foreverSong = {{foreverLove | tojson}}; // 总信息列表,[ [0]歌曲名,[1]时长,[2]歌手,[3]总播放次数,[4]循环播放次数,[5]首次播放日期,[6]最近播放日期 ]
+        let allDic = {};
+        let nameArr = [];
+        for (let i = 0; i < foreverSong.length; i++) {
+            allDic[foreverSong[i][0]] = i;
+        }
+        console.log("写入allDic完成:", allDic);
+
+        function songList_write() {
+            let ul = document.getElementById("songList");
+            for (let key in allDic) {
+                let li = document.createElement("li");
+                li.className = "songList_li";
+                li.innerHTML = `<input type="submit" value="${key}" onclick="songTable_write(${allDic[key]}); return false;">`;
+                ul.appendChild(li);
+            }
+            console.log("写入歌曲名列表完成");
+        }
+
+        // 修改表格
+        function songTable_write(songIndex) {
+            let table = document.getElementById("songTable");
+            let row;
+            let thArr = ["歌曲名", "时长", "歌手", "总播放次数", "循环播放次数", "首次播放日期", "最近播放日期"];
+            while (table.rows.length > 1) {
+                table.deleteRow(1);
+            }
+            for (let i = 0; i < 7; i++) {
+                console.log(`准备写入表格第${i}项,数据:`, foreverSong[songIndex][i]);
+                row = table.insertRow(-1);
+                row.insertCell(0).innerText = thArr[i];
+                if (i == 1) {
+                    let songData_hor = (foreverSong[songIndex][i] - foreverSong[songIndex][i] % 3600) / 3600;
+                    let songData_min = (foreverSong[songIndex][i] % 3600 - foreverSong[songIndex][i] % 3600 % 60) / 60;
+                    let songData_sec = foreverSong[songIndex][i] % 3600 - songData_min * 60;
+                    if (songData_hor > 0) {
+                        row.insertCell(1).innerText = `${parseInt(songData_hor)}时${parseInt(songData_min)}分${parseInt(songData_sec)}秒`;
+                    } else if (songData_min > 0) {
+                        row.insertCell(1).innerText = `${parseInt(songData_min)}分${parseInt(songData_sec)}秒`;
+                    } else if (songData_sec > 0) {
+                        row.insertCell(1).innerText = `${parseInt(songData_sec)}秒`;
+                    } else {
+                        row.insertCell(1).innerText = `有点弱...再多听一会儿吧`;
+                    }
+                } else if (i == 2) {
+                    row.insertCell(1).innerHTML = `<a href="/artist?artist=${foreverSong[songIndex][i]}">${foreverSong[songIndex][i]}</a>`;
+                } else if (i == 3 || i == 4) {
+                    row.insertCell(1).innerText = `${foreverSong[songIndex][i]}次`;
+                } else if (i == 5 || i == 6) {
+                    let timeFormat_temp = `${foreverSong[songIndex][i]}`;
+                    let writeFinal = `<a href="/day?day=${timeFormat_temp}">${timeFormat_temp.substring(0,4)}年`;
+                    if (timeFormat_temp[4] == 0) {
+                        writeFinal += `${timeFormat_temp[5]}月`;
+                    } else {
+                        writeFinal += `${timeFormat_temp.substring(4,5)}月`;
+                    };
+                    if (timeFormat_temp[6] == 0) {
+                        writeFinal += `${timeFormat_temp[7]}日</a>`;
+                    } else {
+                        writeFinal += `${timeFormat_temp.substring(6,7)}日</a>`;
+                    };
+                    row.insertCell(1).innerHTML = `<a href="/day?day=${foreverSong[songIndex][i]}">${writeFinal}</a>`
+                } else {
+                    row.insertCell(1).innerHTML = `<a href="/song?songname=${foreverSong[songIndex][i]}">${foreverSong[songIndex][i]}</a>`;
+                }
+            }
+            console.log("表格写入完成");
+        }
+
+        // 获取当日日期YYYYMMDD,写入a标签html
+        function urlWrite() {
+            const date = new Date();
+            console.log(date);
+            let nowDate = date.getFullYear();
+            if (date.getMonth() + 1 <= 10) {
+                nowDate += `0${date.getMonth() + 1}`;
+            } else {
+                nowDate += `${date.getMonth() + 1}`;
+            };
+            if (date.getDate() + 1 <= 10) {
+                nowDate += `0${date.getDate()}`;
+            } else {
+                nowDate += `${date.getDate()}`;
+            };
+            console.log(nowDate); // 格式化为YYYYMMDD
+            let dayAnchor = document.getElementById("dayAnchor");
+            dayAnchor.href = `/day?day=${nowDate}`;
+            console.log("每日数据url修改完成");
+        };
+
+        window.addEventListener("DOMContentLoaded", function() {
+            urlWrite();
+            songList_write();
+        });
+    </script>
+</body>
+</html>

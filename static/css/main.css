@@ -1,0 +1,142 @@
+/* 设置导航栏 */
+#nav ul {
+    top: 0;
+    width: 100%;
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+#nav ul {
+    background: rgb(182, 232, 255);
+    background-position: 0% 38%;
+}
+
+#nav li {
+    float: left;
+    border-right: 1px solid rgb(212, 212, 212);
+}
+
+#nav #nav_about {
+    border-left: 1px solid rgb(212, 212, 212);
+}
+
+#nav li a {
+    display: block;
+    width: 100px;
+    text-decoration: none;    
+}
+
+#nav li a {
+    text-align: center;
+    padding: 20px 20px;
+    color: black;
+    font-size: 120%;
+}
+
+#nav li a:hover {
+    background-color: rgb(128, 215, 255);
+}
+
+/* 数据展示的表格部分 */
+/* 设置表格位置 */
+table {
+    border: 2px solid rgb(212, 212, 212);
+    border-radius: 10px;
+}
+
+#totalHour_table, #dayTotal_table {
+    float: left;
+}
+
+#monthData_table, #dayEach_table {
+    float: right;
+}
+
+table tr th {
+    background-color: rgb(128, 215, 255);
+    width: 150px;
+    height: 40px;
+}
+
+table tr td {
+    background-color: rgb(218, 243, 255);
+    width: 150px;
+    height: 25px;
+}
+
+table tr th, table tr td {
+    border: 1px solid rgb(212, 212, 212);
+    border-radius: 7px;
+    text-align: center;
+}
+
+table tr td:hover {
+    background-color: rgb(128, 215, 255);
+    color: white;
+}
+
+table tr th:hover {
+    background-color: rgb(128, 215, 255);
+}
+
+table a {
+    display: block;
+    text-decoration: none;
+    color: black;
+    outline: none;
+    text-align: center;
+}
+
+table a:hover {
+    color: white;
+}
+
+/* NyaArtist页面设置 */
+#allSong_table {
+    max-height: 500px;
+    overflow-y: scroll;
+}
+
+
+/* NyaAll页面设置 */
+#songList {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    background: rgb(182, 232, 255);
+    max-height: 500px;
+    overflow-y: scroll;
+}
+
+.stickyHeader {
+    position: sticky;
+    top: 0;
+    background-color: rgb(182, 232, 255);
+    font-weight: bold;
+    z-index: 1;
+    box-shadow: 0 1px 2px rgb(182, 232, 255);
+}
+
+#songList li {
+    border-right: 1px solid rgb(212, 212, 212);
+    border-top: 1px solid white;
+    border-bottom: 1px solid white;
+}
+
+#songList input {
+    background-color: rgb(128, 215, 255); /* 绿色背景 */
+    border: none;
+    color: white;
+    padding: 10px 14px;
+    text-align: center;
+    width: 100%;
+    height: 30px;
+    cursor: pointer;
+    transition-duration: 0.4s; /* 悬停过渡效果 */
+}
+
+#songList input:hover {
+    background-color: rgb(90, 199, 249);
+}
