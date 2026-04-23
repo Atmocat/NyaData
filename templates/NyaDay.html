@@ -41,8 +41,9 @@
     <script>
         let dayTotal = {{day_total | tojson}}; // int或null,精确到分
         let dayEach = {{day_each | tojson}}; // dic或null,传递为完播歌曲{name:[完播次数,单曲循环次数]}
-        // 测试数据 let dayTotal = 50000
-        // 测试数据 let dayEach = {"gura":[15,12], "saba":[11,1], "neuro":[2,0], "wanxing":[50,42], "ruama":[10,6], "starfish":[10,7]}
+        //let dayTotal = 50000
+        //let dayEach = {"gura":[15,12], "saba":[11,1], "neuro":[2,0], "wanxing":[50,42], "ruama":[10,6], "starfish":[10,7]}
+        console.log("初始数据:", dayTotal, dayEach);
         let nameSortCheck = -1; // 歌曲名排序参数
         let integerSortCheck = -1; // 播放次数排序参数
         let roundSortCheck = -1; // 循环播放排序参数
@@ -65,6 +66,7 @@
 
         // 格式化播放时长
         function timeFormat() {
+            console.log(`预格式化日期:${dayTotal}`);
             let songData_hor = (dayTotal - dayTotal % 3600) / 3600;
             let songData_min = (dayTotal % 3600 - dayTotal % 3600 % 60) / 60;
             let songData_sec = dayTotal % 3600 - songData_min * 60;
