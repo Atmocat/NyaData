@@ -1,5 +1,7 @@
 .vscode/
-
+temp/
+to_exe.bat
+data/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -268,7 +268,6 @@ class ShowData(DataManage):
         for __ in range(len(most_play[1])):
             most_play[1][__] = get_ad_day(most_play[1][__])
         list_data[7],list_data[8] = most_play[0],most_play[1]
-        print(list_data)
         return list_data
     
     def day_data(self,ad_day: str) -> dict | None:
@@ -278,8 +277,10 @@ class ShowData(DataManage):
         "all": [int] 听歌时长\n
         "song": [dict] "song_name" : [list] [播放次数,循环播放次数]
         """
-        day = get_gura_day(ad_day)
-        return self.get_day_data(day)
+        day = get_gura_day(ad_day) 
+        out = self.get_day_data(day)
+        print(out)
+        return out
     
     def all_song_data(self) -> list[list] | None:
         """
@@ -363,7 +364,7 @@ def days():
     data = Show.day_data(ad_day)
     if not data or (data.get("all",0)//60) < 1 : # 没有数据或者听歌时长小于1min时 #传值None
         return render_template("NyaDay.html",day_total = None, day_each = None)
-    return render_template("NyaDay.html", day_total = data.get("all",0) // 60, day_each = data.get("song",None))
+    return render_template("NyaDay.html", day_total = data.get("all",0), day_each = data.get("song",None))
 
 @app.route("/song")
 def song():
@@ -378,7 +379,6 @@ def song():
 def AllSong():
     data = Show.all_song_data()
     # 如果是空值就返回空值本身
-    print(data)
     return render_template("NyaAll.html",foreverLove = data)
 
 @app.route("/artist")
