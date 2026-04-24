@@ -1,4 +1,5 @@
-/* 设置导航栏 */
+/* 公共部分 */
+/* 导航栏 */
 #nav ul {
     top: 0;
     width: 100%;
@@ -6,11 +7,7 @@
     margin: 0;
     padding: 0;
     overflow: hidden;
-}
-
-#nav ul {
     background: rgb(182, 232, 255);
-    background-position: 0% 38%;
 }
 
 #nav li {
@@ -30,7 +27,7 @@
 
 #nav li a {
     text-align: center;
-    padding: 20px 20px;
+    padding: 12px 16px;
     color: black;
     font-size: 120%;
 }
@@ -39,31 +36,24 @@
     background-color: rgb(128, 215, 255);
 }
 
-/* 数据展示的表格部分 */
-/* 设置表格位置 */
+/* 表格 */
 table {
-    border: 2px solid rgb(212, 212, 212);
+    border: none;
     border-radius: 10px;
-}
-
-#totalHour_table, #dayTotal_table {
-    float: left;
-}
-
-#monthData_table, #dayEach_table {
-    float: right;
 }
 
 table tr th {
     background-color: rgb(128, 215, 255);
-    width: 150px;
-    height: 40px;
+    width: 130px;
+    height: 30px;
+    position: sticky;
+    z-index: 1;
 }
 
 table tr td {
     background-color: rgb(218, 243, 255);
-    width: 150px;
-    height: 25px;
+    width: 130px;
+    height: 20px;
 }
 
 table tr th, table tr td {
@@ -93,23 +83,7 @@ table a:hover {
     color: white;
 }
 
-/* NyaArtist页面设置 */
-#allSong_table {
-    max-height: 500px;
-    overflow-y: scroll;
-}
-
-
-/* NyaAll页面设置 */
-#songList {
-    list-style-type: none;
-    margin: 0;
-    padding: 0;
-    background: rgb(182, 232, 255);
-    max-height: 500px;
-    overflow-y: scroll;
-}
-
+/* 公共-类选择器 */
 .stickyHeader {
     position: sticky;
     top: 0;
@@ -119,14 +93,39 @@ table a:hover {
     box-shadow: 0 1px 2px rgb(182, 232, 255);
 }
 
+/* 定义各类动画 */
+@keyframes scroll-left {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-100%);
+    }
+}
+
+/* 各页面客制化 */
+/* NyaAll页面 */
+#songList {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    background: rgb(182, 232, 255);
+    max-width: 350px;
+    max-height: 500px;
+    overflow-x: hidden;
+    overflow-y: scroll;
+}
+
 #songList li {
     border-right: 1px solid rgb(212, 212, 212);
     border-top: 1px solid white;
     border-bottom: 1px solid white;
+    flex-wrap: nowrap;
+    overflow: hidden;
 }
 
 #songList input {
-    background-color: rgb(128, 215, 255); /* 绿色背景 */
+    background-color: rgb(159, 159, 159);
     border: none;
     color: white;
     padding: 10px 14px;
@@ -134,9 +133,47 @@ table a:hover {
     width: 100%;
     height: 30px;
     cursor: pointer;
-    transition-duration: 0.4s; /* 悬停过渡效果 */
+}
+
+#songList input:not(value-shown) {
+    animation-name: scroll-left;
+    animation-delay: 1s;
+    animation-duration: 4s;
+    animation-iteration-count: infinite;
 }
 
 #songList input:hover {
     background-color: rgb(90, 199, 249);
 }
+
+/* NyaArtist页面 */
+#artistMain {
+    display: block;
+}
+
+#allSong {
+    display: block;
+    max-height: 500px;
+    overflow-y: auto;
+    overflow-x: auto;
+}
+
+#allSong_table {
+    margin: 0;
+    max-width: 100%;
+}
+
+
+/* NyaData界面 */
+
+/* NyaDay界面 */
+#dayTotal_table {
+    float: left;
+}
+
+#dayEach_table {
+    float: right;
+}
+/* NyaSong界面 */
+
+/* about界面 */
