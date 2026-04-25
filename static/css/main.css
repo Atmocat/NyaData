@@ -23,9 +23,6 @@
     display: block;
     width: 100px;
     text-decoration: none;    
-}
-
-#nav li a {
     text-align: center;
     padding: 12px 16px;
     color: black;
@@ -167,12 +164,68 @@ table a:hover {
 /* NyaData界面 */
 
 /* NyaDay界面 */
+#day {
+    display: block;
+}
+
 #dayTotal_table {
     float: left;
 }
 
 #dayEach_table {
+    float: left;
+}
+
+.calendar {
     float: right;
+}
+
+.calendarDate, .calendarButton {
+    display: inline;
+}
+
+.calendarWeeks {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    background: rgb(245, 255, 193);
+    padding: 0.75rem 0;
+    border-bottom: 1px solid rgb(250, 255, 225);
+    font-weight: 600;
+    color: black;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+.calendarWeek {
+    text-align: center;
+    letter-spacing: 1px;
+}
+
+.calendarDay {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    background: rgb(250, 255, 225);
+    border-bottom: 1px solid rgb(159, 159, 159);
+    border-right: 1px solid rgb(159, 159, 159);
+}
+
+.calendarDay a {
+    display: block;
+    width: 100%;
+    height: 100%;
+    text-decoration: none;
+    margin: 30%;
+    padding: 60% 60% 10% 10%;
+    color: black;
+    text-align: center;
+}
+
+.calendarDay:not(.empty):hover {
+    background: rgb(239, 255, 157);
+}
+
+#calendarToday {
+    background: rgb(239, 255, 157);
 }
 /* NyaSong界面 */
 

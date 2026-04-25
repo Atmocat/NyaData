@@ -22,6 +22,33 @@
         </div>
     </header>
     <h2>每日数据</h2>
+
+    <!-- 日历,跳转至选中日期的数据 -->
+    <div class="calendar">
+        <!-- 动态生成日历表格表头 -->
+        <div class="calendarNav">
+            <div class="calendarDate" id="calendarDate"></div>
+            <div class="calendarButton">
+                <input id="calendarBtn_former" type="button" value="上一月" onclick="calendarFormer(); return false;">
+                <input id="calendarBtn_today" type="button" value="本日">
+                <input id="calendarBtn_later" type="button" value="下一月" onclick="calendarLater(); return false;">
+            </div>
+        </div>
+        <!-- 固定值星期行 -->
+        <div class="calendarWeeks">
+            <div class="calendarWeek">日</div>
+            <div class="calendarWeek">一</div>
+            <div class="calendarWeek">二</div>
+            <div class="calendarWeek">三</div>
+            <div class="calendarWeek">四</div>
+            <div class="calendarWeek">五</div>
+            <div class="calendarWeek">六</div>
+        </div>
+        <!-- 动态生成日期表 -->
+        <div id="calendarDay" class="calendarDay"></div>
+    </div>
+
+    <!-- 选中日数据表格 -->
     <div id="day">
         <table id="dayTotal_table">
             <tr>
@@ -36,20 +63,22 @@
             </tr>
         </table>
     </div>
-    
+
     <!-- 脚本设置 -->
     <script>
         let dayTotal = {{day_total | tojson}}; // int或null,精确到分
-        let dayEach = {{day_each | tojson}}; // dic或null,传递为完播歌曲{name:[完播次数,单曲循环次数]}
+        const dayEach = {{day_each | tojson}}; // dic或null,传递为完播歌曲{name:[完播次数,单曲循环次数]}
         //let dayTotal = 50000
-        //let dayEach = {"gura":[15,12], "saba":[11,1], "neuro":[2,0], "wanxing":[50,42], "ruama":[10,6], "starfish":[10,7]}
+        //const dayEach = {"gura":[15,12], "saba":[11,1], "neuro":[2,0], "wanxing":[50,42], "ruama":[10,6], "starfish":[10,7]}
         console.log("初始数据:", dayTotal, dayEach);
         let nameSortCheck = -1; // 歌曲名排序参数
         let integerSortCheck = -1; // 播放次数排序参数
         let roundSortCheck = -1; // 循环播放排序参数
         let nameArr;
         let dayEachArr = [];
-
+        let dateArr = [new Date().getFullYear(), new Date().getMonth()+1];
+        console.log(`待定日期:${dateArr[0]}年${dateArr[1]}月`);
+        calendar(`${dateArr[0]}-${dateArr[1]}`);
         // 写入dayEachArr 格式为嵌套列表[[name, 完播次数, 单曲循环次数], [], ...]
         function dayArr_write() {
             if (dayEach != null) {
@@ -180,6 +209,117 @@
                 button.value = "降序";
             }
             console.log("dayEach_table写入完成");
+        }
+
+        // 动态写入日期表格 className = calendarWeek/s/Day,传入"YYYY-MM"
+        // 默认为当天,从urlWrite()传入
+        function calendar(selectDate) {
+            let displayDate = new Date(selectDate);
+            let selectToday = new Date();
+            let displayYear = displayDate.getFullYear();
+            let displayMonth = displayDate.getMonth();
+            let displayFirstWeek = displayDate.getDay();
+            let displayDayArr = new Array(42).fill(null);
+            let arrDay = 1;
+            // 先删除旧日历,后写入
+            let div_calendarDay = document.getElementById("calendarDay");
+            let div_calendarDate = document.getElementById("calendarDate");
+            while (div_calendarDay.hasChildNodes()) {
+                div_calendarDay.removeChild(div_calendarDay.firstChild);
+            }
+            div_calendarDate.innerText = `${displayYear}年${displayMonth+1}月`;
+            for (let i = displayFirstWeek; i < 42; i++) {
+                // 判断大小月
+                if ((displayMonth == 1 || displayMonth == 3 || displayMonth == 5 || displayMonth == 7 || displayMonth == 8 || displayMonth == 10 || displayMonth == 12 ) && (arrDay == 32)) {
+                    break;
+                } else if (displayMonth == 2) {
+                    // 判断闰年
+                    if ((displayYear % 4 == 0 && displayYear % 100 != 0) || displayYear % 400 == 0) {
+                        if (arrDay == 30) {
+                            break;
+                        } else {
+                            displayDayArr[i] = arrDay;
+                            arrDay += 1;
+                        }
+                    } else if (arrDay == 29) {
+                        break;
+                    } else {
+                        displayDayArr[i] = arrDay;
+                        arrDay += 1;
+                    }
+                } else if ((displayMonth == 4 || displayMonth == 6 || displayMonth == 9 || displayMonth == 11) && arrDay == 31) {
+                    break;
+                } else {
+                    displayDayArr[i] = arrDay;
+                    arrDay += 1;
+                }
+            }
+            console.log(`日历写入:${displayDate},${displayYear}年,${displayMonth}月,首日为星期${displayFirstWeek};日期表格:`, displayDayArr);
+            // 开始写入指定年月
+            for (let i = 0 ; i < 42; i++) {
+                let newDay = document.createElement("div");
+                newDay.className = "calendarDay";
+                if (displayYear == selectToday.getFullYear() && displayMonth == selectToday.getMonth() && displayDayArr[i] == selectToday.getDay()) {
+                    newDay.id = "calendarToday";
+                }
+                if (displayDayArr[i] != null) {
+                    let calendarWrite = `<a href="/day?day=${displayYear}`;
+                    if (displayMonth + 1 < 10) {
+                        calendarWrite += `0${displayMonth+1}`;
+                    } else {
+                        calendarWrite += `${displayMonth+1}`;
+                    }
+                    if (displayDayArr[i] < 10) {
+                        calendarWrite += `0${displayDayArr[i]}">${displayDayArr[i]}</a>`;
+                    } else {
+                        calendarWrite += `${displayDayArr[i]}">${displayDayArr[i]}</a>`;
+                    }
+                    newDay.innerHTML = calendarWrite;
+                } else if (i >= 28 && i % 7 == 0) {
+                    break;
+                }
+                div_calendarDay.appendChild(newDay);
+            }
+            console.log(`${displayYear}年${displayMonth}月日历写入完成`);
+        }
+
+        // 日历上一月按钮 [YYYY,MM(1-9为单数字)]
+        function calendarFormer() {
+            dateArr[1] = dateArr[1]-1;
+            if (dateArr[1] == 0) {
+                dateArr[1] = 12;
+                dateArr[0] = dateArr[0]-1;
+            }
+            console.log(`上一月按钮执行成功:${dateArr[0]}年${dateArr[1]}月`);
+            if (dateArr < 10) {
+                calendar(`${dateArr[0]}-0${dateArr[1]}`);
+            } else {
+                calendar(`${dateArr[0]}-${dateArr[1]}`);
+            }
+        }
+
+        // 日历下一月按钮 [YYYY,MM(1-9为单数字)]
+        function calendarLater() {
+            dateArr[1] = dateArr[1]+1;
+            if (dateArr[1] == 12) {
+                dateArr[1] = 1;
+                dateArr[0] = dateArr[0]+1;
+            }
+            console.log(`上一月按钮执行成功:${dateArr[0]}年${dateArr[1]}月`);
+            if (dateArr < 10) {
+                calendar(`${dateArr[0]}-0${dateArr[1]}`);
+            } else {
+                calendar(`${dateArr[0]}-${dateArr[1]}`);
+            }
+        }
+
+        // 日历本日按钮 [YYYY,MM,DD]
+        function calendarToday() {
+            let today = new Date();
+            let year = today.getFullYear();
+            let month = today.getMonth();
+            let day = today.getDay();
+            calendar(`${year}-${month}`);
         }
 
         // 获取当日日期YYYYMMDD,写入a标签html
