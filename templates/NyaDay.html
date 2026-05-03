@@ -160,6 +160,15 @@
             dayEach_tableWrite();
         }
 
+        // 写入h2标题 格式 每日数据-YYYY年MM月DD日
+        function h2Write() {
+            let h2 = document.getElementsByTagName("h2");
+            let urlDate = new URLSearchParams("day");
+            let date = urlDate;
+            console.log(`url解析日期为${urlDate}`)
+            h2.innerText = `每日数据-${urlDate}年${urlDate}月${urlDate}日`;
+        }
+
         // dayTotal_table写入数据
         function dayTotal_tableWrite() {
             let table = document.getElementById("dayTotal_table");
@@ -214,10 +223,10 @@
         // 动态写入日期表格 className = calendarWeek/s/Day,传入"YYYY-MM"
         // 默认为当天,从urlWrite()传入
         function calendar(selectDate) {
-            let displayDate = new Date(selectDate);
             let selectToday = new Date();
+            let displayDate = new Date(selectDate);
             let displayYear = displayDate.getFullYear();
-            let displayMonth = displayDate.getMonth();
+            let displayMonth = displayDate.getMonth() + 1;
             let displayFirstWeek = displayDate.getDay();
             let displayDayArr = new Array(42).fill(null);
             let arrDay = 1;
@@ -227,7 +236,7 @@
             while (div_calendarDay.hasChildNodes()) {
                 div_calendarDay.removeChild(div_calendarDay.firstChild);
             }
-            div_calendarDate.innerText = `${displayYear}年${displayMonth+1}月`;
+            div_calendarDate.innerText = `${displayYear}年${displayMonth}月`;
             for (let i = displayFirstWeek; i < 42; i++) {
                 // 判断大小月
                 if ((displayMonth == 1 || displayMonth == 3 || displayMonth == 5 || displayMonth == 7 || displayMonth == 8 || displayMonth == 10 || displayMonth == 12 ) && (arrDay == 32)) {
@@ -265,9 +274,9 @@
                 if (displayDayArr[i] != null) {
                     let calendarWrite = `<a href="/day?day=${displayYear}`;
                     if (displayMonth + 1 < 10) {
-                        calendarWrite += `0${displayMonth+1}`;
+                        calendarWrite += `0${displayMonth}`;
                     } else {
-                        calendarWrite += `${displayMonth+1}`;
+                        calendarWrite += `${displayMonth}`;
                     }
                     if (displayDayArr[i] < 10) {
                         calendarWrite += `0${displayDayArr[i]}">${displayDayArr[i]}</a>`;
@@ -319,7 +328,12 @@
             let year = today.getFullYear();
             let month = today.getMonth();
             let day = today.getDay();
-            calendar(`${year}-${month}`);
+            if (month < 10) {
+                calendar(`${year}-0${month}`);
+            } else {
+                calendar(`${year}-${month}`);
+            }
+            
         }
 
         // 获取当日日期YYYYMMDD,写入a标签html
@@ -350,6 +364,7 @@
             nameSort();
             dayTotal = timeFormat();
             dayTotal_tableWrite();
+            h2Write();
         });
     </script>
 </body>
