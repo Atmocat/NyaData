@@ -2,6 +2,7 @@
 temp/
 to_exe.bat
 data/
+需求.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
