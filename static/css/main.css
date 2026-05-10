@@ -1,36 +1,19 @@
 /* 公共部分 */
 /* 导航栏 */
-#nav ul {
-    top: 0;
+#nav {
     width: 100%;
-    list-style-type: none;
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-    background: rgb(182, 232, 255);
+    height: 20px;
 }
 
 #nav li {
+    list-style-type: none;
+}
+
+#nav a {
     float: left;
-    border-right: 1px solid rgb(212, 212, 212);
-}
-
-#nav #nav_about {
-    border-left: 1px solid rgb(212, 212, 212);
-}
-
-#nav li a {
-    display: block;
-    width: 100px;
-    text-decoration: none;    
-    text-align: center;
-    padding: 12px 16px;
-    color: black;
-    font-size: 120%;
-}
-
-#nav li a:hover {
-    background-color: rgb(128, 215, 255);
+    width: auto;
+    border: 1px solid rgb(17, 17, 17);
+    text-decoration: none;
 }
 
 /* 表格 */
@@ -162,6 +145,134 @@ table a:hover {
 
 
 /* NyaData界面 */
+#nyaData_top {
+    width: 100%;
+    height: 70px;
+    background-color: rgb(255, 226, 192);
+    position: fixed;
+    display: flex;
+    top: 0%;
+    left: 0%;
+    justify-content: center;
+    
+}
+
+#nyaData_topTop {
+    width: 100%;
+    height: 12px;
+    position: fixed;
+    display: inline;
+    top: 0%;
+    left: 0%;
+    background-color: rgba(255, 185, 119, 0.5);
+}
+
+#nyaData_top h1 {
+    align-self: center;
+    position: relative;
+    display: block;
+    text-decoration: none;
+    font-weight: 400;
+}
+
+#nyaData_top p {
+    align-self: center;
+    position: relative;
+    display: block;
+    text-decoration: none;
+    font-family: "幼圆";
+    font-size: 200%;
+    font-weight: 100;
+}
+
+#nyaData_topBottom {
+    width: 100%;
+    height: 6px;
+    position: fixed;
+    display: inline;
+    top: 70px;
+    left: 0%;
+    background-color: rgba(119, 187, 255, 0.6);
+}
+
+#nyaData_main {
+    position: relative;
+    width: 95%;
+    top: 200px;
+    left: 2.5%;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.nyaData_circle {
+    /* 圆形设置 */
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background-color: rgb(231, 231, 231);
+    /* 文本居中 */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    /* a标签文本设置 */
+    text-decoration: none;
+    color: black;
+    transition: all 0.2s ease;
+}
+
+.nyaData_circle:hover {
+    background-color: rgb(192, 224, 255);
+    transform: scale(1.02);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.nyaData_circle div {
+    font-size: 16px;
+    color: rgb(60, 60, 60);
+    margin-bottom: 8px;
+}
+
+.nyaData_circle div:first-child {
+    font-size: 14px;
+    color: rgb(85, 85, 85);
+    margin-bottom: 8px;
+}
+
+.nyaData_circle div:last-child {
+    font-size: 18px;
+    font-weight: bold;
+    color: rgb(17, 17, 17);
+}
+
+#nyaData_allTimes:hover {
+    background-color: rgb(192, 224, 255);
+    transform: scale(1.02);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+#nyaData_todayTimes:hover {
+    background-color: rgb(228, 192, 255);
+    transform: scale(1.02);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+#nyaData_years:hover {
+    background-color: rgb(255, 235, 192);
+    transform: scale(1.02);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+#nyaData_abouts:hover {
+    background-color: rgb(255, 192, 192);
+    transform: scale(1.02);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+#nyaData_bottom {
+    background-image: ;
+}
 
 /* NyaDay界面 */
 #day {
@@ -286,5 +397,17 @@ table a:hover {
 
 
 /* NyaSong界面 */
+
+/* NyaYear界面 */
+#NyaYear_backHomes {
+    width: 50px;
+    height: 50px;
+    background-color: rgb(255, 192, 192);
+    color: black;
+}
+
+#NyaYear_backHomes a {
+    text-decoration: none;
+}
 
 /* about界面 */
