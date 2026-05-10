@@ -465,28 +465,17 @@ class DataManage:
 class ShowData(DataManage):
     def __init__(self) -> None:
         super().__init__()
-    def index_data(self) ->list:
+    def day_data(self, day: str) ->tuple | None:
         """
-        获取主页数据\n
+        日数据\n
+        dat: AD Day\n
         -> tuple\n
-        [0] 今年年份\n
-        [1] 总播放时长\n
-        [2] 年内月播放时长(list)
+        [0] 日听歌时长\n
+        [1] 日听歌歌曲
         """
-        if not self.main_data:
-            stop()
-        
-        data: list = []
-        year = self.today[:4]
-        data.append(year)
-        data.append(self.main_data["all"]//(60*60))
-        month_data:list = []
-        for month in self.month_list: # 获取12个月份
-            month_data_get = self.main_data["month"].get(f"{year}{month}",0) // (60 * 60)
-            month_data.append([month,month_data_get])
-        
-        data.append(month_data)
-        return data
+        days = get_gura_day(day)
+        data = self.get_day_data(days)
+        return (data.get("all",0),data.get("song",{})) if data else None
 
     def song_data(self,song_name) ->list | None:
         """
@@ -521,9 +510,9 @@ class ShowData(DataManage):
         list_data[7],list_data[8] = most_play[0],most_play[1]
         return list_data
     
-    def day_data(self,ad_day: str) -> tuple | None:
+    def index_data(self,ad_day: str) -> tuple | None:
         """
-        获取单日听歌数据\n
+        主页数据\n
         -> tuple | None\n
         (总听歌时长,当日播放总时长,当日听歌曲目数)
         """
@@ -687,21 +676,28 @@ class ShowData(DataManage):
 
 Show = ShowData()
 
-@app.route("/")
-def index():
-    data = Show.index_data()
-    return render_template("NyaData.html", all_data = data)
 
-@app.route("/day")
+@app.route("/")
 def days():
     ad_day = request.args.get("day")
     if not ad_day: # 未获取到url中的日期 全部返回空值
-        return render_template("NyaDay.html",all_data = None)
-    data = Show.day_data(ad_day)
+        return render_template("NyaData.html",all_data = None)
+    data = Show.index_data(ad_day)
     if data is None:
-        return render_template("NyaDay.html",all_data = None)
+        return render_template("NyaData.html",all_data = None)
     
-    return render_template("NyaDay.html",all_data = data)
+    return render_template("NyaData.html",all_data = data)
+
+@app.route("/day")
+def index():
+    days = request.args.get("day")
+    if days is None:
+        return render_template("NyaDay.html", all_total = None, day_each = None)
+    
+    data = Show.day_data(days)
+    if data is None:
+        return render_template("NyaDay.html", all_total = None, day_each = None)
+    return render_template("NyaDay.html", all_total = data[0], day_each = data[1])
 
 @app.route("/song")
 def song():
