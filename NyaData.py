@@ -692,12 +692,12 @@ def days():
 def index():
     days = request.args.get("day")
     if days is None:
-        return render_template("NyaDay.html", all_total = None, day_each = None)
+        return render_template("NyaDay.html", day_total = None, day_each = None)
     
     data = Show.day_data(days)
     if data is None:
-        return render_template("NyaDay.html", all_total = None, day_each = None)
-    return render_template("NyaDay.html", all_total = data[0], day_each = data[1])
+        return render_template("NyaDay.html", day_total = None, day_each = None)
+    return render_template("NyaDay.html", day_total = data[0], day_each = data[1])
 
 @app.route("/song")
 def song():
