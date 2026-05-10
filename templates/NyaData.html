@@ -8,77 +8,70 @@
     <title>NyaData - 播放数据展示</title>
 </head>
 <body>
-    <!-- 导航栏部分,所有数据在同一页面内 -->
-    <header>
-        <div id="nav">
-            <ul>
-                <li style="background-color: rgb(128, 215, 255)"><a href="/">数据总览</a></li>
-                <li><a href="/AllSong">所有歌曲</a></li>
-                <li><a href="/song">单曲信息</a></li>
-                <li><a href="/artist">歌手信息</a></li>
-                <li><a id="dayAnchor" href="/day?day=">每日数据</a></li>
-                <li style="float:right" id="nav_about"><a href="/about">关于</a></li>
-            </ul>
-        </div>
-    </header>
-
-    <!-- 各部分数据,用表格承接 -->
-    <div id="totalHour">
-        <h2>数据总览</h2>
-        <table id="totalHour_table">
-            <tr>
-                <th>总播放时长</th>
-            </tr>
-        </table>
-        <table id="monthData_table">
-            <tr>
-                <th>月份</th>
-                <th>月播放时长</th>
-            </tr>
-        </table>
+    <div id="nyaData_top">
+        <div id="nyaData_topTop"></div>
+        <h1>NyaData</h1>
+        <p>欢迎您</p>
+        <div id="nyaData_topBottom"></div>
     </div>
+
+    <div id="nyaData_main">
+        <a class="nyaData_circle" id="nyaData_allTimes" href="/AllSong">
+            <div>要看看一共听了什么歌吗?</div>
+            <div>一共听歌:</div>
+            <div id="nyaData_allTime"></div>
+        </a>
+        <a class="nyaData_circle" id="nyaData_todayTimes" href="/day?day=">
+            <div>今天听了什么?</div>
+            <div id="nyaData_todayTime"></div>
+        </a>
+        <a class="nyaData_circle" id="nyaData_years" href="/year?year=">
+            <div>音乐可以陶冶情操~</div>
+            <div>来看看今年的数据吧</div>
+        </a>
+        <a class="nyaData_circle" id="nyaData_abouts" href="/about">
+            <div>谢谢你</div>
+            <div>献给最爱的你</div>
+        </a>
+    </div>
+
+    <div id="nyaData_bottom"></div>
 
     <!-- 脚本设置 -->
     <script>
-        // 数据格式 数据整体all_data ; 总时长total_hours ; 本年年份year ; [月份,月数据,...]数组monthData
-        // 使用flask接收json的变量
-        const allData = {{all_data|tojson}};
-        const year = allData[0];
-        const totalHour = allData[1];
-        const monthData = allData[2];
+        // 数据格式 allData->all_data=[全时间播放时长,系统时间当日播放总时长,当日听歌曲目数], 时间单位秒
+        // const allData = {{all_data|tojson}};
+        const allData = [1460000, 640, 7] // 测试数据
 
-        // 向总播放时长写入信息
-        function totalData_write() {
-            let table = document.getElementById("totalHour_table");
-            let newRow = table.insertRow(-1);
-            let newData1 = newRow.insertCell(0);
-            if (totalHour != undefined) {
-                newData1.innerText = `${totalHour}小时`;
+        // 格式化时间
+        function timeFormat(time) {
+            let songData_hor = (time - time % 3600) / 3600;
+            let songData_min = (time % 3600 - time % 3600 % 60) / 60;
+            let songData_sec = time % 3600 - songData_min * 60;
+            if (songData_hor > 0) {
+                time = `${parseInt(songData_hor)}时${parseInt(songData_min)}分${parseInt(songData_sec)}秒`;
+            } else if (songData_min > 0) {
+                time = `${parseInt(songData_min)}分${parseInt(songData_sec)}秒`;
+            } else if (songData_sec > 0) {
+                time = `${parseInt(songData_sec)}秒`;
             } else {
-                newData1.innerText = `未获取到数据`;
-            };
-            
-        };
+                time = `有点弱...再多听一会儿吧`;
+            }
+            return time;
+        }
 
-        // 向每月时长写入信息
-        function monthData_write(i) {
-            let table = document.getElementById("monthData_table");
-            let newRow = table.insertRow(-1);
-            let newData1 = newRow.insertCell(0);
-            let newData2 = newRow.insertCell(1);
-            if (monthData[i][0] != undefined) {
-                newData1.innerText = `${year}年${monthData[i][0]}月`;
-            } else {
-                newData1.innerText = `未获取到数据`;
-            };
-            if (monthData[i][1] != undefined) {
-                newData2.innerText = `${monthData[i][1]}小时`;
-            } else {
-                newData2.innerText = `未获取到数据`;
-            };
-        };
+        function divWrite(todayDate) {
+            const allTimeDiv = document.getElementById("nyaData_allTime");
+            allTimeDiv.innerHTML = timeFormat(allData[0]);
+            const todayTimeDiv = document.getElementById("nyaData_todayTime");
+            todayTimeDiv.innerHTML = `${timeFormat(allData[1])}, ${allData[2]}首`;
+            const todayCircle = document.getElementById("nyaData_todayTimes");
+            todayCircle.setAttribute("href", `/day?day=${todayDate}`);
+            const yearHref = document.getElementById("nyaData_years");
+            yearHref.setAttribute("href", `/year?year=${todayDate.substring(0,4)}`);
+        }
 
-        // 获取当日日期YYYYMMDD,写入a标签html
+        // 获取当日日期并格式化YYYYMMDD,写入url
         function urlWrite() {
             const date = new Date();
             console.log(date);
@@ -93,19 +86,17 @@
             } else {
                 nowDate += `${date.getDate()}`;
             };
-            console.log(nowDate); // 格式化为YYYYMMDD
-            let dayAnchor = document.getElementById("dayAnchor");
-            dayAnchor.href = `/day?day=${nowDate}`;
-            console.log("每日数据url修改完成");
+            console.log(`格式化完成,今天是${nowDate.substring(0,4)}年${nowDate.substring(4,6)}月${nowDate.substring(6,8)}日`);
+            if (location.search !== `?day=${nowDate}`) {
+                location.search = `?day=${nowDate}`;
+            }
+            return nowDate;
         };
 
         // DOM加载后调用
         window.addEventListener("DOMContentLoaded", function() {
-            urlWrite();
-            totalData_write();
-            for (let i = 0; i<=11; i++) {
-                monthData_write(i);
-            };
+            let todayDate = urlWrite();
+            divWrite(todayDate);
         });
     </script>
 </body>
