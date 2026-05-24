@@ -8,128 +8,199 @@
     <title>NyaAll - 所有歌曲信息页</title>
 </head>
 <body>
-    <!-- 导航栏部分,所有数据在同一页面内 -->
-    <header>
-        <div id="nav">
-            <ul>
-                <li><a href="/">数据总览</a></li>
-                <li style="background-color: rgb(128, 215, 255)"><a href="/AllSong">所有歌曲</a></li>
-                <li><a href="/song">单曲信息</a></li>
-                <li><a href="/artist">歌手信息</a></li>
-                <li><a id="dayAnchor" href="/day?day=">每日数据</a></li>
-                <li style="float:right" id="nav_about"><a href="/about">关于</a></li>
-            </ul>
-        </div>
-    </header>
-
-    <!-- 所有歌曲信息 -->
-    <div>
-        <h2>所有歌曲信息</h2>
+    <div id="nyaAll_top">
+        <div id="nyaAll_topTop"></div>
+        <h1>NyaAll</h1>
+        <p>所有歌曲信息页</p>
+        <a href="/">回到首页</a>
+        <div id="nyaAll_topBottom"></div>
     </div>
 
-    <div id="songData">
-        <ul id="songList" style="float: left;"><li class="stickyHeader">歌曲名列表</li></ul>
-        <!-- [0]歌曲名,[1]时长,[2]歌手,[3]总播放次数,[4]循环播放次数,[5]首次播放日期,[6]最近播放日期 -->
-        <table id="songTable" style="float: right;">
-            <tr><th colspan="2">选中歌曲信息</th></tr>
-        </table>
+    <!-- 所有歌曲信息 -->
+    <div id="nyaAll_body">
+        <div id="nyaAll_songList">
+            <div id="nyaAll_songListNav">
+                <div id="nyaAll_songListSearch">
+                    <input type="text" id="nyaAll_songListSearchInput" placeholder="输入歌名以检索,区分大小写">
+                    <input type="button" id="nyaAll_songListSearchBtn" value="搜索" onclick="songListSearch(); return false;">
+                </div>
+                <!-- <div id="nyaAll_songListSearchJump">
+                    <input type="button" class="nyaAll_songListSearchJumpBtn" value="上一个结果" onclick="songListSearchJump(1); return false">
+                    <input type="button" class="nyaAll_songListSearchJumpBtn" value="下一个结果" onclick="songListSearchJump(-1); return false">
+                </div> -->
+                <div id="nyaAll_songListSort">
+                    <p>歌曲列表</p>
+                    <input type="button" onclick="songListSort(); return false;">
+                </div>
+            </div>
+            <div id="nyaAll_songListBody"></div>
+        </div>
+        <div id="nyaAll_songSelect"></div>
     </div>
 
     <script>
-        // 获取歌曲信息,foreverLove承接,嵌套列表,时长格式秒(转化为时分秒),日期格式YYYYMMDD
-        const foreverSong = {{foreverLove | tojson}}; // 总信息列表,[ [0]歌曲名,[1]时长,[2]歌手,[3]总播放次数,[4]循环播放次数,[5]首次播放日期,[6]最近播放日期 ]
-        let allDic = {};
-        let nameArr = [];
-        for (let i = 0; i < foreverSong.length; i++) {
-            allDic[foreverSong[i][0]] = i;
-        }
-        console.log("写入allDic完成:", allDic);
+        // 获取歌曲信息,foreverLove承接,嵌套列表,时长为秒,日期格式YYYYMMDD
+        let foreverSong = {{foreverLove | tojson}}; // 总信息列表,[ [0]歌曲名,[1]时长,[2]歌手,[3]总播放次数,[4]循环播放次数,[5]首次播放日期,[6]最近播放日期 ]
+        let songListSortCheck = -1; // 排序参数,1正序,-1倒序
 
-        function songList_write() {
-            let ul = document.getElementById("songList");
-            for (let key in allDic) {
-                let li = document.createElement("li");
-                li.className = "songList_li";
-                li.innerHTML = `<input type="submit" value="${key}" onclick="songTable_write(${allDic[key]}); return false;">`;
-                ul.appendChild(li);
+        function songListSort() {
+            songListSortCheck = songListSortCheck === 1 ? -1 : 1;
+            if (songListSortCheck == 1) {
+                foreverSong.sort((a, b) => a[0] > b[0] ? 1 : -1);
+            } else {
+                foreverSong.sort((a, b) => b[0] > a[0] ? 1 : -1);
             }
-            console.log("写入歌曲名列表完成");
+            console.log("歌曲名排序完成:", foreverSong);
+            songListWrite();
         }
 
-        // 修改表格
-        function songTable_write(songIndex) {
-            let table = document.getElementById("songTable");
-            let row;
-            let thArr = ["歌曲名", "时长", "歌手", "总播放次数", "循环播放次数", "首次播放日期", "最近播放日期"];
-            while (table.rows.length > 1) {
-                table.deleteRow(1);
-            }
-            for (let i = 0; i < 7; i++) {
-                console.log(`准备写入表格第${i}项,数据:`, foreverSong[songIndex][i]);
-                row = table.insertRow(-1);
-                row.insertCell(0).innerText = thArr[i];
-                if (i == 1) {
-                    let songData_hor = (foreverSong[songIndex][i] - foreverSong[songIndex][i] % 3600) / 3600;
-                    let songData_min = (foreverSong[songIndex][i] % 3600 - foreverSong[songIndex][i] % 3600 % 60) / 60;
-                    let songData_sec = foreverSong[songIndex][i] % 3600 - songData_min * 60;
-                    if (songData_hor > 0) {
-                        row.insertCell(1).innerText = `${parseInt(songData_hor)}时${parseInt(songData_min)}分${parseInt(songData_sec)}秒`;
-                    } else if (songData_min > 0) {
-                        row.insertCell(1).innerText = `${parseInt(songData_min)}分${parseInt(songData_sec)}秒`;
-                    } else if (songData_sec > 0) {
-                        row.insertCell(1).innerText = `${parseInt(songData_sec)}秒`;
-                    } else {
-                        row.insertCell(1).innerText = `有点弱...再多听一会儿吧`;
-                    }
-                } else if (i == 2) {
-                    row.insertCell(1).innerHTML = `<a href="/artist?artist=${foreverSong[songIndex][i]}">${foreverSong[songIndex][i]}</a>`;
-                } else if (i == 3 || i == 4) {
-                    row.insertCell(1).innerText = `${foreverSong[songIndex][i]}次`;
-                } else if (i == 5 || i == 6) {
-                    let timeFormat_temp = `${foreverSong[songIndex][i]}`;
-                    let writeFinal = `<a href="/day?day=${timeFormat_temp}">${timeFormat_temp.substring(0,4)}年`;
-                    if (timeFormat_temp[4] == 0) {
-                        writeFinal += `${timeFormat_temp[5]}月`;
-                    } else {
-                        writeFinal += `${timeFormat_temp.substring(4,5)}月`;
-                    };
-                    if (timeFormat_temp[6] == 0) {
-                        writeFinal += `${timeFormat_temp[7]}日</a>`;
-                    } else {
-                        writeFinal += `${timeFormat_temp.substring(6,7)}日</a>`;
-                    };
-                    row.insertCell(1).innerHTML = `<a href="/day?day=${foreverSong[songIndex][i]}">${writeFinal}</a>`
-                } else {
-                    row.insertCell(1).innerHTML = `<a href="/song?songname=${foreverSong[songIndex][i]}">${foreverSong[songIndex][i]}</a>`;
+        function songListSearch() {
+            const songNameToSearch = document.getElementById("nyaAll_songListSearchInput").value;
+            let searchCheck = [0]; // 检索判断,无结果返回 [0] ,有结果则返回 [结果个数, 索引]
+            console.log(`预检索歌曲名:${songNameToSearch}`);
+            for (let i = 0; i < foreverSong.length; i++) {
+                let tempSongName = foreverSong[i][0];
+                if (tempSongName.includes(songNameToSearch) == true) {
+                    searchCheck[0] = searchCheck[0] += 1;
+                    searchCheck.push(i);
                 }
             }
-            console.log("表格写入完成");
+            console.log("查询结果数及索引为:", searchCheck);
         }
 
-        // 获取当日日期YYYYMMDD,写入a标签html
-        function urlWrite() {
-            const date = new Date();
-            console.log(date);
-            let nowDate = date.getFullYear();
-            if (date.getMonth() + 1 <= 10) {
-                nowDate += `0${date.getMonth() + 1}`;
+        function songListWrite() {
+            const div = document.getElementById("nyaAll_songListBody");
+            while (div.hasChildNodes()) {
+                div.removeChild(div.firstChild);
+            }
+            for (let i = 0; i < foreverSong.length; i++) {
+                let newDiv = document.createElement("div");
+                newDiv.className = "nyaAll_songListBodyDiv";
+                newDiv.id = `nyaAll_songListBodyDiv${i}`;
+                newDiv.innerHTML = `<input type="button" class="nyaAll_songListBodyBtn" value="${foreverSong[i][0]}" onclick="selectSongWrite(${i}); return false;">`;
+                div.appendChild(newDiv);
+            }
+            console.log("歌曲列表写入完成");
+        }
+
+        function selectSongWrite(arrayIndex) {
+            // 数据格式 [0]歌曲名,[1]时长,[2]歌手,[3]总播放次数,[4]循环播放次数,[5]首次播放日期,[6]最近播放日期
+            // 多歌手用 ; 分割
+            let array = foreverSong[arrayIndex];
+            console.log("预写入单曲数据数组:", array);
+            let navArray = ["歌曲名", "播放时长", "歌手", "总播放次数", "循环播放次数", "首次播放日", "最近播放日期"];
+            let div = document.getElementById("nyaAll_songSelect");
+            while (div.hasChildNodes()) {
+                div.removeChild(div.firstChild);
+            }
+            for (let i = 0; i <= 6; i++) {               
+                let newDiv = document.createElement("div");
+                newDiv.className = "nyaAll_songSelectNav";
+                newDiv.innerText = navArray[i];
+                div.appendChild(newDiv);
+
+                newDiv = document.createElement("div");
+                newDiv.className = "nyaAll_songSelectData";
+
+                let finalWrite = "";
+                if (i == 0) {
+                    newDiv = document.createElement("a");
+                    newDiv.className = "nyaAll_songSelectData";
+                    newDiv.href = `/song?songname=${array[0]}`;
+                    finalWrite = array[0];
+                    newDiv.innerHTML = finalWrite;
+                    div.appendChild(newDiv);
+                } else if (i == 1) {
+                    finalWrite = timeFormat(array[1]);
+                    newDiv.innerHTML = finalWrite;
+                    div.appendChild(newDiv);
+                } else if (i == 2) {
+                    let tempArtistArray;
+                    if (array[2].includes(";") == true) {
+                        tempArtistArray = array[2].split(";");
+                    } else if (array[2].includes("/") == true) {
+                        tempArtistArray = array[2].split("/");
+                    } else if (array[2].includes("\\") == true) {
+                        tempArtistArray = array[2].split("\\");
+                    } else {
+                        tempArtistArray = [array[2]];
+                    }
+                    console.log("单曲信息[2]歌手信息分割完成,结果:", tempArtistArray);
+                    if (tempArtistArray.length == 1) {
+                        newDiv = document.createElement("a");
+                        newDiv.className = "nyaAll_songSelectData";
+                        newDiv.href = `/artist?artist=${tempArtistArray[0]}`;
+                        finalWrite = tempArtistArray[0];
+                        newDiv.innerHTML = finalWrite;
+                        div.appendChild(newDiv);
+                    } else {
+                        for (let i1 = 0; i1 < tempArtistArray.length; i1++) {
+                            newDiv = document.createElement("a");
+                            newDiv.className = "nyaAll_songSelectData";
+                            newDiv.href = `/artist?artist=${tempArtistArray[i1]}`;
+                            finalWrite = tempArtistArray[i1];
+                            newDiv.innerHTML = finalWrite;
+                            div.appendChild(newDiv);
+                        }
+                    }
+                } else if (i == 3 || i == 4) {
+                    finalWrite = `${array[i]}次`;
+                    newDiv.innerHTML = finalWrite;
+                    div.appendChild(newDiv);
+                } else {
+                    finalWrite = dateFormat(array[i]);
+                    newDiv = document.createElement("a");
+                    newDiv.className = "nyaAll_songSelectData";
+                    newDiv.href = `/day?day=${array[i]}`;
+                    newDiv.innerHTML = finalWrite;
+                    div.appendChild(newDiv);
+                    div.appendChild(newDiv);
+                }
+                
+            }
+            console.log(`选择歌曲${array[0]}信息写入完成`);
+        }
+
+        function timeFormat(timeUnFormat) {
+            // 传入时间秒
+            let timeToFormat;
+            console.log(`预格式化时长:${timeUnFormat}`);
+            let timeFormat_hor = (timeUnFormat - timeUnFormat % 3600) / 3600;
+            let timeFormat_min = (timeUnFormat % 3600 - timeUnFormat % 3600 % 60) / 60;
+            let timeFormat_sec = timeUnFormat % 3600 - timeFormat_min * 60;
+            if (timeFormat_hor > 0) {
+                timeToFormat = `${parseInt(timeFormat_hor)}时${parseInt(timeFormat_min)}分${parseInt(timeFormat_sec)}秒`;
+            } else if (timeFormat_min > 0) {
+                timeToFormat = `${parseInt(timeFormat_min)}分${parseInt(timeFormat_sec)}秒`;
+            } else if (timeFormat_sec > 0) {
+                timeToFormat = `${parseInt(timeFormat_sec)}秒`;
             } else {
-                nowDate += `${date.getMonth() + 1}`;
-            };
-            if (date.getDate() + 1 <= 10) {
-                nowDate += `0${date.getDate()}`;
+                timeToFormat = `有点弱...再多听一会儿吧`;
+            }
+            console.log(`格式化时长完成:${timeToFormat}`);
+            return timeToFormat;
+        }
+
+        function dateFormat(dateUnFormat) {
+            // 传入日期YYYYMMDD
+            let dateToFormat = `${dateUnFormat.substring(0,4)}年`;
+            console.log(`预格式化日期:${dateUnFormat}`);
+            if (dateToFormat.substring(4) == 0) {
+                dateToFormat += `${dateUnFormat.substring(5,6)}月`;
             } else {
-                nowDate += `${date.getDate()}`;
-            };
-            console.log(nowDate); // 格式化为YYYYMMDD
-            let dayAnchor = document.getElementById("dayAnchor");
-            dayAnchor.href = `/day?day=${nowDate}`;
-            console.log("每日数据url修改完成");
-        };
+                dateToFormat += `${dateUnFormat.substring(4,6)}月`;
+            }
+            if (dateUnFormat.substring(6) == 0) {
+                dateToFormat += `${dateUnFormat.substring(7,8)}日`;
+            } else {
+                dateToFormat += `${dateUnFormat.substring(6,8)}日`;
+            }
+            console.log(`格式化日期完成:${dateToFormat}`);
+            return dateToFormat;
+        }
 
         window.addEventListener("DOMContentLoaded", function() {
-            urlWrite();
-            songList_write();
+            songListSort();
         });
     </script>
 </body>

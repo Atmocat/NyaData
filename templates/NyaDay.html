@@ -5,92 +5,127 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="shortcut icon" href="/static/img/main.ico">
     <link rel="stylesheet" type="text/css" href="/static/css/main.css">
-    <title>NyaDay - 每日数据展示</title>
+    <title>NyaDay - 每日数据页</title>
 </head>
 <body>
     <!-- 导航栏部分,所有数据在同一页面内 -->
-    <header>
-        <div id="nav">
-            <ul>
-                <li><a href="/">数据总览</a></li>
-                <li><a href="/AllSong">所有歌曲</a></li>
-                <li><a href="/song">单曲信息</a></li>
-                <li><a href="/artist">歌手信息</a></li>
-                <li style="background-color: rgb(128, 215, 255)"><a id="dayAnchor" href="/day">每日数据</a></li>
-                <li style="float:right" id="nav_about"><a href="/about">关于</a></li>
-            </ul>
-        </div>
-    </header>
-    <h2>每日数据</h2>
+    <div id="nyaDay_top">
+        <div id="nyaDay_topTop"></div>
+        <h1>NyaDay</h1>
+        <p>每日数据页</p>
+        <a href="/">回到首页</a>
+        <div id="nyaDay_topBottom"></div>
+    </div>
 
-    <!-- 日历,跳转至选中日期的数据 -->
-    <div class="calendar">
-        <!-- 动态生成日历表格表头 -->
-        <div class="calendarNav">
-            <div class="calendarDate" id="calendarDate"></div>
-            <div class="calendarButton">
-                <input id="calendarBtn_former" type="button" value="上一月" onclick="calendarFormer(); return false;">
-                <input id="calendarBtn_today" type="button" value="本日">
-                <input id="calendarBtn_later" type="button" value="下一月" onclick="calendarLater(); return false;">
-            </div>
+    <!-- 单日歌曲信息表格 -->
+    <div id="nyaDay_table">
+        <div id="nyaDay_tableNav">
+            <div>歌曲名<input type="submit" id="nyaDay_nameSort_btn" onclick="nameSort(); return false;"></div>
+            <div>完播次数<input type="submit" id="nyaDay_integerSort_btn" onclick="integerSort(); return false;"></div>
+            <div>单曲循环次数<input type="submit" id="nyaDay_roundSort_btn" onclick="roundSort(); return false"></div>
         </div>
-        <!-- 固定值星期行 -->
-        <div class="calendarWeeks">
-            <div class="calendarWeek">日</div>
-            <div class="calendarWeek">一</div>
-            <div class="calendarWeek">二</div>
-            <div class="calendarWeek">三</div>
-            <div class="calendarWeek">四</div>
-            <div class="calendarWeek">五</div>
-            <div class="calendarWeek">六</div>
-        </div>
-        <!-- 动态生成日期表 -->
-        <div id="calendarDays" class="calendarDays"></div>
+        <div id="nyaDay_tableBody"></div>
     </div>
 
     <!-- 选中日数据表格 -->
-    <div id="day">
-        <table id="dayTotal_table">
-            <tr>
-                <th>今日播放总时长</th>
-            </tr>
-        </table>
-        <table id="dayEach_table">
-            <tr class="stickyHeader">
-                <th>歌曲名<input type="submit" id="nameSort_btn" onclick="nameSort(); return false;"></th>
-                <th>播放次数<input type="submit" id="integerSort_btn" onclick="integerSort(); return false;"></th>
-                <th>单曲循环次数<input type="submit" id="roundSort_btn" onclick="roundSort(); return false"></th>
-            </tr>
-        </table>
+    <div id="nyaDay_total">
+        <div id="nyaDay_days">
+            <div id="nyaDay_date"></div>
+            <div id="nyaDay_day"></div>
+        </div>
+
+        <!-- 日历,跳转至选中日期的数据 -->
+        <div class="calendar">
+            <!-- 动态生成日历表格表头 -->
+            <div class="calendarNav">
+                <div class="calendarDate" id="calendarDate"></div>
+                <div class="calendarButton">
+                    <input id="calendarBtn_former" type="button" value="上一月" onclick="calendarFormer(); return false;">
+                    <input id="calendarBtn_today" type="button" value="本日">
+                    <input id="calendarBtn_later" type="button" value="下一月" onclick="calendarLater(); return false;">
+                </div>
+            </div>
+            <!-- 固定值星期行 -->
+            <div class="calendarWeeks">
+                <div class="calendarWeek">日</div>
+                <div class="calendarWeek">一</div>
+                <div class="calendarWeek">二</div>
+                <div class="calendarWeek">三</div>
+                <div class="calendarWeek">四</div>
+                <div class="calendarWeek">五</div>
+                <div class="calendarWeek">六</div>
+            </div>
+            <!-- 动态生成日期表 -->
+            <div id="calendarDays" class="calendarDays"></div>
+        </div>
     </div>
 
     <!-- 脚本设置 -->
     <script>
         let dayTotal = {{day_total | tojson}}; // int或null,精确到分
         const dayEach = {{day_each | tojson}}; // dic或null,传递为完播歌曲{name:[完播次数,单曲循环次数]}
-        //let dayTotal = 50000
+        //let dayTotal = 50000;
         //const dayEach = {"gura":[15,12], "saba":[11,1], "neuro":[2,0], "wanxing":[50,42], "ruama":[10,6], "starfish":[10,7]}
         console.log("初始数据:", dayTotal, dayEach);
         let nameSortCheck = -1; // 歌曲名排序参数
-        let integerSortCheck = -1; // 播放次数排序参数
-        let roundSortCheck = -1; // 循环播放排序参数
+        let integerSortCheck = -1; // 完播次数排序参数
+        let roundSortCheck = -1; // 单曲循环次数排序参数
         let nameArr;
-        let dayEachArr = [];
+        let dayEachArr = []; // 预排序嵌套列表,[歌曲名,完播次数,单曲循环次数]
+        for (let key in dayEach) {
+            let temp_dayEachArr = dayEach[key];
+            temp_dayEachArr = [key, temp_dayEachArr[0], temp_dayEachArr[1]];
+            dayEachArr.push(temp_dayEachArr);
+        }
         let dateArr = [new Date().getFullYear(), new Date().getMonth()+1];
         console.log(`待定日期:${dateArr[0]}年${dateArr[1]}月`);
         calendar(`${dateArr[0]}-${dateArr[1]}`);
-        // 写入dayEachArr 格式为嵌套列表[[name, 完播次数, 单曲循环次数], [], ...]
-        function dayArr_write() {
-            if (dayEach != null) {
-                for (let key in dayEach) {
-                    nameArr = [];
-                    nameArr.push(key);
-                    nameArr.push(dayEach[key][0]);
-                    nameArr.push(dayEach[key][1]);
-                    dayEachArr.push(nameArr);
+    
+        function nyaDay_dayWrite() {
+            let div = document.getElementById("nyaDay_day");
+            div.innerHTML = `今天听歌时长为：${dayTotal}`;
+            div = document.getElementById("nyaDay_date");
+            let today = (new URLSearchParams(window.location.search)).get("day");
+            console.log(`nyaDay_day写入,今天是:${today}`);
+            if (today[4] == 0) {
+                if (today[6] == 0) {
+                    today = `${today.substring(0,4)}年${today[5]}月${today[7]}日`;
+                } else {
+                    today = `${today.substring(0,4)}年${today[5]}月${today.substring(6,8)}日`;
+                }
+            } else {
+                if (today[6] == 0) {
+                    today = `${today.substring(0,4)}年${today.substring(4,6)}月${today[7]}日`;
+                } else {
+                    today = `${today.substring(0,4)}年${today.substring(4,6)}月${today.substring(6,8)}日`;
                 }
             }
-            console.log("初始写入dayEachArr完成" ,dayEach, dayEachArr);
+            div.innerHTML = today;
+        }
+
+        function nyaDay_tableWrite() {
+            const div = document.getElementById("nyaDay_tableBody");
+            while (div.hasChildNodes()) {
+                div.removeChild(div.firstChild);
+            }
+            for (let i = 0; i < dayEachArr.length; i++) {
+                let newDiv = document.createElement("a");
+                newDiv.className = "nyaDay_tableData";
+                newDiv.href = `/song?songname=${dayEachArr[i][0]}`;
+                newDiv.innerHTML = `${dayEachArr[i][0]}`;
+                div.appendChild(newDiv);
+
+                newDiv = document.createElement("div");
+                newDiv.className = "nyaDay_tableData";
+                newDiv.innerHTML = dayEachArr[i][1];
+                div.appendChild(newDiv);
+
+                newDiv = document.createElement("div");
+                newDiv.className = "nyaDay_tableData";
+                newDiv.innerHTML = dayEachArr[i][2];
+                div.appendChild(newDiv);
+            }
+            console.log("nyaDay_tableBody写入完成");
         }
 
         // 格式化播放时长
@@ -114,110 +149,59 @@
 
         // 按歌曲名排序,1正序,-1倒序
         function nameSort() {
+            let button = document.getElementById("nyaDay_nameSort_btn");
             nameSortCheck = nameSortCheck === 1 ? -1 : 1;
             if (nameSortCheck == 1) {
                 dayEachArr.sort((a, b) => a[0] > b[0] ? 1 : -1);
+                button.value = "升序";
             } else {
                 dayEachArr.sort((a, b) => a[0] < b[0] ? 1 : -1);
+                button.value = "倒序";
             }
             console.log("按歌曲名排序完成", dayEachArr);
-            dayEach_tableWrite();
+            nyaDay_tableWrite();
         }
 
         // 按播放次数排序,1正序,-1倒序,相同时按歌曲名正序
         function integerSort() {
+            let button = document.getElementById("nyaDay_integerSort_btn");
             integerSortCheck = integerSortCheck === 1 ? -1 : 1;
             if (integerSortCheck == 1) {
                 dayEachArr.sort((a, b) => {
                     if (a[1] != b[1]) return a[1] - b[1];
                     return a[0].localeCompare(b[0]);
                 });
+                button.value = "倒序";
             } else {
                 dayEachArr.sort((a, b) => {
                     if (a[1] != b[1]) return b[1] - a[1];
                     return a[0].localeCompare(b[0]);
                 });
+                button.value = "升序";
             }
             console.log("按播放次数排序完成", dayEachArr);
-            dayEach_tableWrite();
+            nyaDay_tableWrite();
         }
 
         // 按循环播放次数排序,1正序,-1倒序,相同时按歌曲名正序
         function roundSort() {
+            let button = document.getElementById("nyaDay_roundSort_btn");
             roundSortCheck = roundSortCheck === 1 ? -1 : 1;
             if (roundSortCheck == 1) {
                 dayEachArr.sort((a, b) => {
                     if (a[2] != b[2]) return a[2] - b[2];
                     return a[0].localeCompare(b[0]);
                 });
+                button.value = "倒序";
             } else {
                 dayEachArr.sort((a, b) => {
                     if (a[2] != b[2]) return b[2] - a[2];
                     return a[0].localeCompare(b[0]);
                 });
+                button.value = "升序";
             }
             console.log("按循环次数排序完成", dayEachArr);
-            dayEach_tableWrite();
-        }
-
-        // 写入h2标题 格式 每日数据-YYYY年MM月DD日
-        function h2Write() {
-            let h2 = document.getElementsByTagName("h2");
-            let urlDate = new URLSearchParams("day");
-            let date = urlDate;
-            console.log(`url解析日期为${urlDate}`)
-            h2.innerText = `每日数据-${urlDate}年${urlDate}月${urlDate}日`;
-        }
-
-        // dayTotal_table写入数据
-        function dayTotal_tableWrite() {
-            let table = document.getElementById("dayTotal_table");
-            if (dayTotal == 0 || dayTotal == null) {
-                table.insertRow(-1).insertCell().innerText = `有点弱...再多听一会儿吧`;
-            } else {
-                table.insertRow(-1).insertCell().innerText = dayTotal;
-            }
-            console.log("dayTotal_table写入完成");
-        }
-
-        // dayEach_table写入数据
-        function dayEach_tableWrite() {
-            let table = document.getElementById("dayEach_table");
-            let row;
-            while (table.rows.length > 1) {
-                table.deleteRow(1);
-            }
-            console.log("准备写入dayEach_table:", dayEachArr);
-            if (dayEach == null) {
-                row = table.insertRow(-1);
-                row.insertCell.innerText = "有点弱...再多听一会儿吧";
-            } else {
-                for (let i = 0; i < dayEachArr.length; i++) {
-                    row = table.insertRow(-1);
-                    row.insertCell(0).innerHTML = `<a href="/song?songname=${dayEachArr[i][0]}">${dayEachArr[i][0]}</a>`;
-                    row.insertCell(1).innerText = `${dayEachArr[i][1]}次`;
-                    row.insertCell(2).innerText = `${dayEachArr[i][2]}次`;
-                }
-            }
-            let button = document.getElementById("nameSort_btn");
-            if (nameSortCheck == 1) {
-                button.value = "升序";
-            } else {
-                button.value = "降序";
-            }
-            button = document.getElementById("integerSort_btn");
-            if (integerSortCheck == 1) {
-                button.value = "升序";
-            } else {
-                button.value = "降序";
-            }
-            button = document.getElementById("roundSort_btn");
-            if (roundSortCheck == 1) {
-                button.value = "升序";
-            } else {
-                button.value = "降序";
-            }
-            console.log("dayEach_table写入完成");
+            nyaDay_tableWrite();
         }
 
         // 动态写入日期表格 className = calendarWeek/s/Day,传入"YYYY-MM"
@@ -336,35 +320,13 @@
             
         }
 
-        // 获取当日日期YYYYMMDD,写入a标签html
-        function urlWrite() {
-            const date = new Date();
-            console.log(`今天是${date}`);
-            let nowDate = date.getFullYear();
-            if (date.getMonth() + 1 <= 10) {
-                nowDate += `0${date.getMonth() + 1}`;
-            } else {
-                nowDate += `${date.getMonth() + 1}`;
-            };
-            if (date.getDate() + 1 <= 10) {
-                nowDate += `0${date.getDate()}`;
-            } else {
-                nowDate += `${date.getDate()}`;
-            };
-            console.log(nowDate); // 格式化为YYYYMMDD
-            let dayAnchor = document.getElementById("dayAnchor");
-            dayAnchor.href = `/day?day=${nowDate}`;
-            console.log("每日数据url修改完成");
-        };
-
         // DOM加载后,分割列表并执行对应函数
         window.addEventListener("DOMContentLoaded", function() {
-            urlWrite();
-            dayArr_write();
-            nameSort();
             dayTotal = timeFormat();
-            dayTotal_tableWrite();
-            h2Write();
+            nyaDay_dayWrite();
+            document.getElementById("nyaDay_integerSort_btn").value = "升序";
+            document.getElementById("nyaDay_roundSort_btn").value = "升序";
+            nameSort();
         });
     </script>
 </body>

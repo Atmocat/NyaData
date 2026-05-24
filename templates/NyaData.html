@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="shortcut icon" href="/static/img/main.ico">
     <link rel="stylesheet" type="text/css" href="/static/css/main.css">
-    <title>NyaData - 播放数据展示</title>
+    <title>NyaData - 首页</title>
 </head>
 <body>
     <div id="nyaData_top">
@@ -40,8 +40,9 @@
     <!-- 脚本设置 -->
     <script>
         // 数据格式 allData->all_data=[全时间播放时长,系统时间当日播放总时长,当日听歌曲目数], 时间单位秒
-        // const allData = {{all_data|tojson}};
-        const allData = [1460000, 640, 7] // 测试数据
+        const allData = {{all_data|tojson}};
+        // const allData = [1460000, 640, 7] // 测试数据
+        console.log("全部数据:", allData);
 
         // 格式化时间
         function timeFormat(time) {
