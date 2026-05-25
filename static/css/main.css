@@ -176,8 +176,10 @@ table a:hover {
 
 #nyaAll_songListNav {
     position: relative;
+    display: grid;
+    grid-template-rows: 40% 30% 30%;
     top: 0%;
-    height: 90px;
+    height: 100px;
     align-items: center;
 }
 
@@ -185,13 +187,13 @@ table a:hover {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 45px;
+    height: 40px;
 }
 
 #nyaAll_songListSearchInput {
     left: 10px;
-    height: 70%;
-    width: 75%;
+    height: 100%;
+    width: 100%;
     /* 形状设置 */
     background-color: rgb(231, 231, 231);
     border: none;
@@ -205,28 +207,35 @@ table a:hover {
     outline: rgb(217, 168, 255);
 }
 
+#nyaAll_songListSearchJump {
+    display: grid;
+    grid-template-columns: 40% 30% 30%;
+    justify-self: center;
+    align-self: center;
+    width: 100%;
+}
 
-#nyaAll_songListSearchBtn {
-    right: 30px;
-    height: 78%;
-    width: 20%;
+#nyaAll_songListSearchJump input {
+    position: relative;
+    height: 100%;
+    width: auto;
     border: 1px solid rgb(228, 192, 255);
     border-radius: 8px;
     background-color: rgb(231, 231, 231);
+    margin-left: 4px;
+    margin-right: 4px;
 }
 
-#nyaAll_songListSearchBtn:hover {
+#nyaAll_songListSearchJump input:hover {
     background-color: rgb(217, 168, 255);
     transform: scale(1.02);
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-
 }
 
 #nyaAll_songListSort {
     position: relative;
     display: flex;
     top: 5px;
-    height: 50%;
     /* 形状设置 */
     border-radius: 8px;
     background-color: rgb(228, 192, 255);
