@@ -21,16 +21,16 @@
         <div id="nyaAll_songList">
             <div id="nyaAll_songListNav">
                 <div id="nyaAll_songListSearch">
-                    <input type="text" id="nyaAll_songListSearchInput" placeholder="输入歌名以检索,区分大小写">
-                    <input type="button" id="nyaAll_songListSearchBtn" value="搜索" onclick="songListSearch(); return false;">
+                    <input type="text" id="nyaAll_songListSearchInput" placeholder="输入歌名以检索,英文不区分大小写">
                 </div>
-                <!-- <div id="nyaAll_songListSearchJump">
-                    <input type="button" class="nyaAll_songListSearchJumpBtn" value="上一个结果" onclick="songListSearchJump(1); return false">
-                    <input type="button" class="nyaAll_songListSearchJumpBtn" value="下一个结果" onclick="songListSearchJump(-1); return false">
-                </div> -->
+                <div id="nyaAll_songListSearchJump">
+                    <input type="button" id="nyaAll_songListSearchBtn" value="搜索" onclick="songListSearch(); return false;">
+                    <input type="button" class="nyaAll_songListSearchJumpBtn" value="上一个结果" onclick="songListJump(-1); return false">
+                    <input type="button" class="nyaAll_songListSearchJumpBtn" value="下一个结果" onclick="songListJump(1); return false">
+                </div>
                 <div id="nyaAll_songListSort">
                     <p>歌曲列表</p>
-                    <input type="button" onclick="songListSort(); return false;">
+                    <input type="button" value="升/降序切换" onclick="songListSort(); return false;">
                 </div>
             </div>
             <div id="nyaAll_songListBody"></div>
@@ -42,6 +42,8 @@
         // 获取歌曲信息,foreverLove承接,嵌套列表,时长为秒,日期格式YYYYMMDD
         let foreverSong = {{foreverLove | tojson}}; // 总信息列表,[ [0]歌曲名,[1]时长,[2]歌手,[3]总播放次数,[4]循环播放次数,[5]首次播放日期,[6]最近播放日期 ]
         let songListSortCheck = -1; // 排序参数,1正序,-1倒序
+        let songListSearchArr = []; // 搜索结果,[结果个数, 索引]
+        let songListJumpCheck = 0; // 跳转参数,songListSearchArr索引值,默认1
 
         function songListSort() {
             songListSortCheck = songListSortCheck === 1 ? -1 : 1;
@@ -55,17 +57,54 @@
         }
 
         function songListSearch() {
-            const songNameToSearch = document.getElementById("nyaAll_songListSearchInput").value;
-            let searchCheck = [0]; // 检索判断,无结果返回 [0] ,有结果则返回 [结果个数, 索引]
+            const songNameToSearch = document.getElementById("nyaAll_songListSearchInput").value.toLowerCase();
+            songListSearchArr = [0]; // 检索判断,无结果返回 [0] ,有结果则返回 [结果个数, 索引]
             console.log(`预检索歌曲名:${songNameToSearch}`);
             for (let i = 0; i < foreverSong.length; i++) {
-                let tempSongName = foreverSong[i][0];
+                let tempSongName = foreverSong[i][0].toLowerCase();
                 if (tempSongName.includes(songNameToSearch) == true) {
-                    searchCheck[0] = searchCheck[0] += 1;
-                    searchCheck.push(i);
+                    songListSearchArr[0] = songListSearchArr[0] += 1;
+                    songListSearchArr.push(i);
                 }
             }
-            console.log("查询结果数及索引为:", searchCheck);
+            console.log("查询结果数及索引为:", songListSearchArr);
+            if (songListSearchArr.length > 1) {
+                songListJumpCheck = 0;
+                alert(`检索到${songListSearchArr[0]}个结果,将跳转至第一个结果`);
+                songListJump(1);
+            } else {
+                alert("检索无结果!");
+            }
+        }
+
+        function songListJump(jumpCheck) {
+            // jumpCheck -1向前跳转,1向后跳转
+            let jumpIndex;
+            if (jumpCheck == 1) {
+                console.log("搜索结果执行向前跳转");
+                songListJumpCheck += 1;
+                if (songListJumpCheck == songListSearchArr.length) {
+                    songListJumpCheck -= 1;
+                    alert("已跳转至最后一项,无法再向后跳转!");
+                }
+                jumpIndex = songListSearchArr[songListJumpCheck];
+            } else {
+                console.log("搜索结果执行向后跳转");
+                songListJumpCheck -= 1;
+                if (songListJumpCheck == 0) {
+                    songListJumpCheck += 1;
+                    alert("已跳转至第一项,无法再向前跳转!");
+                }
+                jumpIndex = songListSearchArr[songListJumpCheck];
+            }
+            if (songListSearchArr.length == 1) {
+                alert("还没有检索结果呢~无法跳转喵!");
+                console.log("无检索结果,跳转失败");
+                return;
+            }
+            console.log(`将跳转第${songListJumpCheck}位结果,对应原歌曲列表索引${jumpIndex}`);
+            let jumpToElement = document.getElementById(`nyaAll_songListBodyInput${jumpIndex}`);
+            jumpToElement.scrollIntoView({behavior: 'smooth', block: 'start'});
         }
 
         function songListWrite() {
@@ -74,11 +113,16 @@
                 div.removeChild(div.firstChild);
             }
             for (let i = 0; i < foreverSong.length; i++) {
-                let newDiv = document.createElement("div");
-                newDiv.className = "nyaAll_songListBodyDiv";
-                newDiv.id = `nyaAll_songListBodyDiv${i}`;
-                newDiv.innerHTML = `<input type="button" class="nyaAll_songListBodyBtn" value="${foreverSong[i][0]}" onclick="selectSongWrite(${i}); return false;">`;
-                div.appendChild(newDiv);
+                let newElement = document.createElement("input");
+                newElement.className = "nyaAll_songListBodyInput";
+                newElement.id = `nyaAll_songListBodyInput${i}`;
+                newElement.type = "button";
+                newElement.value = foreverSong[i][0];
+                newElement.addEventListener('click', function() {
+                    selectSongWrite(i);
+                    return false;
+                });
+                div.appendChild(newElement);
             }
             console.log("歌曲列表写入完成");
         }
@@ -154,7 +198,6 @@
                     newDiv.href = `/day?day=${array[i]}`;
                     newDiv.innerHTML = finalWrite;
                     div.appendChild(newDiv);
-                    div.appendChild(newDiv);
                 }
                 
             }
@@ -200,6 +243,13 @@
         }
 
         window.addEventListener("DOMContentLoaded", function() {
+            const songListSearchElement = document.getElementById("nyaAll_songListSearchInput");
+            songListSearchElement.addEventListener("keydown", (songListSearchKey) => {
+                if (songListSearchKey.key === "Enter") {
+                    console.log("检测到搜索框按下回车");
+                    songListSearch();
+                }
+            })
             songListSort();
         });
     </script>
